@@ -1,0 +1,2233 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Saalplan</title>
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ============================================
+           CSS RESET & BASE
+           ============================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Background & Surfaces */
+            --bg-primary: #09090b;
+            --bg-secondary: #0f0f12;
+            --bg-elevated: #16161a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            
+            /* Glass Effect */
+            --glass-bg: rgba(255, 255, 255, 0.04);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-highlight: rgba(255, 255, 255, 0.12);
+            
+            /* Text */
+            --text-primary: #fafafa;
+            --text-secondary: rgba(255, 255, 255, 0.7);
+            --text-muted: rgba(255, 255, 255, 0.45);
+            
+            /* Status Colors - Vibrant */
+            --free: #22c55e;
+            --free-glow: rgba(34, 197, 94, 0.4);
+            --free-bg: rgba(34, 197, 94, 0.15);
+            
+            --occupied: #ef4444;
+            --occupied-glow: rgba(239, 68, 68, 0.4);
+            --occupied-bg: rgba(239, 68, 68, 0.15);
+            
+            --reserved: #f59e0b;
+            --reserved-glow: rgba(245, 158, 11, 0.4);
+            --reserved-bg: rgba(245, 158, 11, 0.15);
+            
+            /* Accent */
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            
+            /* Borders & Shadows */
+            --border-subtle: rgba(255, 255, 255, 0.06);
+            --border-default: rgba(255, 255, 255, 0.1);
+            --border-strong: rgba(255, 255, 255, 0.15);
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+            --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
+            
+            /* Radius */
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 20px;
+            
+            /* Transitions */
+            --transition-fast: 0.15s ease;
+            --transition-smooth: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            /* Prevent browser zoom */
+            touch-action: pan-x pan-y;
+        }
+
+        body {
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+            letter-spacing: -0.01em;
+            /* Prevent text size adjustment on orientation change */
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        /* Ambient Background Gradient */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(34, 197, 94, 0.08), transparent 50%),
+                radial-gradient(ellipse 60% 40% at 80% 0%, rgba(99, 102, 241, 0.08), transparent 50%),
+                radial-gradient(ellipse 50% 30% at 50% 100%, rgba(239, 68, 68, 0.05), transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ============================================
+           HEADER
+           ============================================ */
+        header {
+            position: relative;
+            z-index: 10;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 14px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .logo-mark {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--free), var(--accent));
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-mark::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent 60%);
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border-default);
+        }
+
+        .event-title {
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            border: 1px solid var(--border-default);
+            background: var(--glass-bg);
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            outline: none;
+            width: 150px;
+            transition: var(--transition-fast);
+        }
+
+        .event-title:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .event-title::placeholder {
+            color: var(--text-muted);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            transition: var(--transition-fast);
+        }
+
+        .sync-indicator.syncing {
+            color: var(--accent);
+            border-color: rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .sync-indicator.success {
+            color: var(--free);
+            border-color: rgba(34, 197, 94, 0.3);
+            background: var(--free-bg);
+        }
+
+        .sync-indicator.error {
+            color: var(--occupied);
+            border-color: rgba(239, 68, 68, 0.3);
+            background: var(--occupied-bg);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            box-shadow: 0 0 8px currentColor;
+        }
+
+        .sync-indicator.syncing .sync-dot {
+            animation: pulse-dot 1s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.8); }
+        }
+
+        .search-input {
+            font-family: inherit;
+            padding: 10px 14px;
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            width: 140px;
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            transition: var(--transition-fast);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-default);
+            background: var(--glass-bg);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+
+        .btn:hover {
+            background: var(--glass-highlight);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ============================================
+           MAIN CONTENT
+           ============================================ */
+        main {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .plan-container {
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            -webkit-overflow-scrolling: touch;
+            /* Allow our custom pinch zoom */
+            touch-action: pan-x pan-y pinch-zoom;
+        }
+
+        .plan-wrapper {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            transform-origin: center center;
+            transition: transform 0.15s ease-out;
+            box-shadow: var(--shadow-lg), var(--shadow-glow);
+        }
+
+        .floor-plan {
+            display: flex;
+            gap: 16px;
+            min-width: max-content;
+        }
+
+        /* ============================================
+           ZOOM CONTROLS
+           ============================================ */
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 5;
+        }
+
+        .zoom-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-default);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 20px;
+            font-weight: 500;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .zoom-btn:hover {
+            background: var(--glass-highlight);
+            border-color: var(--border-strong);
+            transform: scale(1.05);
+        }
+
+        .zoom-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* ============================================
+           LAYOUT ELEMENTS
+           ============================================ */
+        .vertical-column {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .u-block {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .u-top, .u-bottom {
+            display: flex;
+            gap: 3px;
+        }
+
+        .u-middle {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .u-side {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .block-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        /* ============================================
+           STAND COMPONENT - The Star of the Show
+           ============================================ */
+        .stand {
+            width: 42px;
+            height: 32px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            color: var(--text-muted);
+            user-select: none;
+            -webkit-user-select: none;
+            position: relative;
+        }
+
+        .stand:hover {
+            transform: scale(1.15) translateY(-2px);
+            z-index: 10;
+            border-color: var(--border-strong);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Status: Free */
+        .stand.free {
+            background: linear-gradient(135deg, var(--free), #16a34a);
+            border-color: var(--free);
+            color: white;
+            box-shadow: 0 2px 8px var(--free-glow);
+        }
+
+        .stand.free:hover {
+            box-shadow: 0 8px 24px var(--free-glow), 0 0 0 1px var(--free);
+        }
+
+        /* Status: Occupied */
+        .stand.occupied {
+            background: linear-gradient(135deg, var(--occupied), #dc2626);
+            border-color: var(--occupied);
+            color: white;
+            box-shadow: 0 2px 8px var(--occupied-glow);
+        }
+
+        .stand.occupied:hover {
+            box-shadow: 0 8px 24px var(--occupied-glow), 0 0 0 1px var(--occupied);
+        }
+
+        /* Status: Reserved */
+        .stand.reserved {
+            background: linear-gradient(135deg, var(--reserved), #d97706);
+            border-color: var(--reserved);
+            color: white;
+            box-shadow: 0 2px 8px var(--reserved-glow);
+        }
+
+        .stand.reserved:hover {
+            box-shadow: 0 8px 24px var(--reserved-glow), 0 0 0 1px var(--reserved);
+        }
+
+        /* Selected State */
+        .stand.selected {
+            box-shadow: 0 0 0 3px var(--accent-glow), 0 0 20px var(--accent-glow);
+            transform: scale(1.08);
+            border-color: var(--accent);
+        }
+
+        /* Highlight (Search) */
+        .stand.highlight {
+            animation: highlight-pulse 0.5s ease-in-out 3;
+        }
+
+        @keyframes highlight-pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
+            50% { transform: scale(1.3); box-shadow: 0 0 30px var(--accent-glow); }
+        }
+
+        /* Dimmed (Filter) */
+        .stand.dimmed {
+            opacity: 0.1;
+            transform: scale(0.95);
+        }
+
+        .spacer {
+            height: 16px;
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        footer {
+            position: relative;
+            z-index: 10;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            background: var(--glass-bg);
+            border: 1px solid var(--border-subtle);
+            transition: var(--transition-fast);
+        }
+
+        .stat:hover {
+            background: var(--glass-highlight);
+            border-color: var(--border-default);
+        }
+
+        .stat.active {
+            border-color: var(--text-secondary);
+            background: var(--glass-highlight);
+        }
+
+        .stat-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .stat-dot.free {
+            background: var(--free);
+            color: var(--free);
+        }
+
+        .stat-dot.occupied {
+            background: var(--occupied);
+            color: var(--occupied);
+        }
+
+        .stat-dot.reserved {
+            background: var(--reserved);
+            color: var(--reserved);
+        }
+
+        .stat-value {
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 28px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+            display: none;
+        }
+
+        .stat-total {
+            margin-left: 12px;
+            padding-left: 20px;
+            border-left: 1px solid var(--border-default);
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .stat-total strong {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ============================================
+           SELECTION BAR
+           ============================================ */
+        .selection-bar {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            padding: 14px 20px;
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-smooth);
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .selection-bar.active {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .selection-bar .count {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .selection-bar .count span {
+            color: var(--text-primary);
+        }
+
+        .selection-bar .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .selection-bar .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selection-bar .action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .selection-bar .action-btn.free {
+            background: var(--free);
+            box-shadow: 0 4px 12px var(--free-glow);
+        }
+
+        .selection-bar .action-btn.occupied {
+            background: var(--occupied);
+            box-shadow: 0 4px 12px var(--occupied-glow);
+        }
+
+        .selection-bar .action-btn.reserved {
+            background: var(--reserved);
+            box-shadow: 0 4px 12px var(--reserved-glow);
+        }
+
+        .selection-bar .cancel-btn {
+            background: transparent;
+            border: 1px solid var(--border-default);
+            color: var(--text-muted);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            font-family: inherit;
+            font-weight: 500;
+            transition: var(--transition-fast);
+        }
+
+        .selection-bar .cancel-btn:hover {
+            background: var(--glass-highlight);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        /* ============================================
+           MODAL - Completely isolated from zoom
+           ============================================ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            /* Prevent any transform inheritance */
+            transform: none !important;
+            transform-origin: center center !important;
+            isolation: isolate;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-xl);
+            padding: 24px;
+            width: 320px;
+            max-width: calc(100vw - 32px);
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            margin: 0 16px;
+            box-shadow: var(--shadow-lg);
+            /* Fixed size - never affected by zoom */
+            transform: scale(1) !important;
+            transform-origin: center center !important;
+            font-size: 14px !important;
+        }
+        
+        .modal-overlay.active .modal {
+            animation: modalAppear 0.2s ease-out;
+        }
+        
+        @keyframes modalAppear {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px) !important;
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0) !important;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-title span {
+            color: var(--accent);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+            background: var(--glass-bg);
+            border: 1px solid var(--border-default);
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition-fast);
+        }
+
+        .modal-close:hover {
+            background: var(--glass-highlight);
+            color: var(--text-primary);
+            border-color: var(--border-strong);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .status-btn {
+            padding: 16px 8px;
+            border-radius: var(--radius-md);
+            border: 2px solid var(--border-default);
+            background: var(--glass-bg);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all var(--transition-fast);
+        }
+
+        .status-btn:hover {
+            border-color: var(--border-strong);
+            transform: scale(1.03);
+            background: var(--glass-highlight);
+        }
+        
+        .status-btn.active {
+            border-color: var(--accent);
+            background: var(--glass-highlight);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .status-btn .dot {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-md);
+        }
+
+        .status-btn .dot.free {
+            background: linear-gradient(135deg, var(--free), #16a34a);
+            box-shadow: 0 4px 16px var(--free-glow);
+        }
+
+        .status-btn .dot.occupied {
+            background: linear-gradient(135deg, var(--occupied), #dc2626);
+            box-shadow: 0 4px 16px var(--occupied-glow);
+        }
+
+        .status-btn .dot.reserved {
+            background: linear-gradient(135deg, var(--reserved), #d97706);
+            box-shadow: 0 4px 16px var(--reserved-glow);
+        }
+
+        .status-btn .label {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            white-space: nowrap;
+        }
+
+        /* ============================================
+           PHOTO SECTION
+           ============================================ */
+        .photo-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        
+        .photo-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .photo-container {
+            width: 100%;
+        }
+        
+        .photo-placeholder {
+            width: 100%;
+            height: 100px;
+            border: 2px dashed var(--border-default);
+            border-radius: var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            color: var(--text-muted);
+        }
+        
+        .photo-placeholder:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(99, 102, 241, 0.05);
+        }
+        
+        .photo-placeholder span {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .photo-preview {
+            position: relative;
+            width: 100%;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        
+        .photo-preview img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+            border-radius: var(--radius-md);
+        }
+        
+        .photo-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-fast);
+        }
+        
+        .photo-delete:hover {
+            background: var(--occupied);
+            transform: scale(1.1);
+        }
+
+        /* ============================================
+           NOTES SECTION
+           ============================================ */
+        .notes-section {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-subtle);
+        }
+        
+        .notes-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+        
+        .notes-input {
+            width: 100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-primary);
+            resize: none;
+            transition: var(--transition-fast);
+        }
+        
+        .notes-input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        
+        .notes-input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .modal-save-btn {
+            width: 100%;
+            margin-top: 16px;
+            padding: 14px;
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-md);
+            color: white;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        .modal-save-btn:hover {
+            background: #5558e8;
+            transform: translateY(-1px);
+        }
+        
+        .modal-save-btn:active {
+            transform: translateY(0);
+        }
+
+        /* ============================================
+           TOAST
+           ============================================ */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            color: var(--text-primary);
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-smooth);
+            z-index: 1001;
+            box-shadow: var(--shadow-md);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* ============================================
+           HINT BANNER
+           ============================================ */
+        .hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            color: var(--text-secondary);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 50;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-smooth);
+        }
+        
+        .hint.hidden {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-50%) translateY(20px);
+        }
+        
+        .hint-icon {
+            font-size: 14px;
+        }
+        
+        .hint-text {
+            color: var(--text-muted);
+        }
+        
+        .hint-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0 4px;
+            margin-left: 4px;
+        }
+        
+        .hint-close:hover {
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 600px) {
+            .hint {
+                left: 10px;
+                right: 10px;
+                transform: none;
+                font-size: 11px;
+            }
+            
+            .hint.hidden {
+                transform: translateY(20px);
+            }
+        }
+
+        /* ============================================
+           RESPONSIVE
+           ============================================ */
+        @media (max-width: 600px) {
+            header {
+                padding: 10px 14px;
+            }
+
+            .logo span {
+                display: none;
+            }
+            
+            .divider {
+                display: none;
+            }
+
+            .event-title {
+                width: 100px;
+                font-size: 13px;
+                padding: 8px 10px;
+            }
+
+            .search-input {
+                width: 90px;
+                font-size: 12px;
+                padding: 8px 10px;
+            }
+
+            .btn {
+                width: 34px;
+                height: 34px;
+            }
+
+            .plan-container {
+                padding: 8px;
+            }
+
+            .plan-wrapper {
+                padding: 12px;
+            }
+
+            .stand {
+                width: 28px;
+                height: 22px;
+                font-size: 7px;
+                border-radius: 4px;
+            }
+            
+            .vertical-column,
+            .u-block,
+            .u-top,
+            .u-bottom,
+            .u-side {
+                gap: 2px;
+            }
+            
+            .block-row {
+                gap: 10px;
+            }
+            
+            .spacer {
+                height: 10px;
+            }
+
+            footer {
+                padding: 10px 14px;
+            }
+
+            .stat {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+
+            .stat-dot {
+                width: 10px;
+                height: 10px;
+            }
+
+            .stat-value {
+                font-size: 13px;
+                min-width: 24px;
+            }
+
+            .stat-total {
+                display: none;
+            }
+
+            .zoom-controls {
+                bottom: 10px;
+                right: 10px;
+            }
+
+            .zoom-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 16px;
+            }
+
+            .selection-bar {
+                left: 10px;
+                right: 10px;
+                transform: translateX(0) translateY(100px);
+                width: auto;
+                bottom: 70px;
+                padding: 12px 16px;
+            }
+
+            .selection-bar.active {
+                transform: translateX(0) translateY(0);
+            }
+
+            .sync-indicator span {
+                display: none;
+            }
+            
+            .modal {
+                width: calc(100vw - 24px);
+                padding: 20px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .stand {
+                width: 48px;
+                height: 36px;
+                font-size: 11px;
+            }
+
+            header, footer {
+                padding: 18px 32px;
+            }
+
+            .plan-wrapper {
+                padding: 40px;
+            }
+
+            .stat-label {
+                display: block;
+            }
+        }
+
+        @media (min-width: 1600px) {
+            .stand {
+                width: 54px;
+                height: 40px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="logo">
+                <div class="logo-mark"></div>
+                <span>Saalplan</span>
+            </div>
+            <div class="divider"></div>
+            <input type="text" class="event-title" id="eventTitle" value="Februar 2026" placeholder="Event Name">
+        </div>
+        <div class="header-right">
+            <div class="sync-indicator" id="syncIndicator">
+                <div class="sync-dot"></div>
+                <span>Airtable</span>
+            </div>
+            <input type="text" class="search-input" id="searchInput" placeholder="Stand suchen...">
+            <button class="btn" onclick="exportData()" title="Exportieren">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+            </button>
+            <button class="btn" onclick="refreshFromAirtable()" title="Synchronisieren">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <div class="plan-container" id="planContainer">
+            <div class="plan-wrapper" id="planWrapper">
+                <div class="floor-plan" id="floorPlan"></div>
+            </div>
+        </div>
+        <div class="zoom-controls">
+            <button class="zoom-btn" onclick="zoomIn()">+</button>
+            <button class="zoom-btn" onclick="zoomOut()">−</button>
+        </div>
+    </main>
+
+    <footer>
+        <div class="stats">
+            <div class="stat" data-filter="free" onclick="toggleFilter('free')">
+                <div class="stat-dot free"></div>
+                <span class="stat-value" id="freeCount">316</span>
+                <span class="stat-label">Frei</span>
+            </div>
+            <div class="stat" data-filter="occupied" onclick="toggleFilter('occupied')">
+                <div class="stat-dot occupied"></div>
+                <span class="stat-value" id="occupiedCount">0</span>
+                <span class="stat-label">Besetzt</span>
+            </div>
+            <div class="stat" data-filter="reserved" onclick="toggleFilter('reserved')">
+                <div class="stat-dot reserved"></div>
+                <span class="stat-value" id="reservedCount">0</span>
+                <span class="stat-label">Reserviert</span>
+            </div>
+            <div class="stat-total"><strong>316</strong> Gesamt</div>
+        </div>
+    </footer>
+
+    <div class="selection-bar" id="selectionBar">
+        <span class="count"><span id="selectedCount">0</span> ausgewählt</span>
+        <div class="actions">
+            <button class="action-btn free" onclick="setStatus('free')" title="Frei"></button>
+            <button class="action-btn occupied" onclick="setStatus('occupied')" title="Besetzt"></button>
+            <button class="action-btn reserved" onclick="setStatus('reserved')" title="Reserviert"></button>
+        </div>
+        <button class="cancel-btn" onclick="clearSelection()">Abbrechen</button>
+    </div>
+    
+    <div class="hint" id="hint">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">Shift+Klick oder langes Drücken für Mehrfachauswahl</span>
+        <button class="hint-close" onclick="closeHint()">×</button>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">Stand <span id="modalStandId"></span></div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="status-grid">
+                <button class="status-btn" onclick="setStatus('free')">
+                    <div class="dot free"></div>
+                    <span class="label">Frei</span>
+                </button>
+                <button class="status-btn" onclick="setStatus('occupied')">
+                    <div class="dot occupied"></div>
+                    <span class="label">Besetzt</span>
+                </button>
+                <button class="status-btn" onclick="setStatus('reserved')">
+                    <div class="dot reserved"></div>
+                    <span class="label">Reserviert</span>
+                </button>
+            </div>
+            
+            <div class="photo-section">
+                <label class="photo-label">Foto</label>
+                <div class="photo-container" id="photoContainer">
+                    <div class="photo-placeholder" id="photoPlaceholder" onclick="triggerPhotoInput()">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                            <circle cx="12" cy="13" r="4"/>
+                        </svg>
+                        <span>Foto aufnehmen</span>
+                    </div>
+                    <div class="photo-preview" id="photoPreview" style="display: none;">
+                        <img id="photoImage" src="" alt="Stand Foto">
+                        <button class="photo-delete" onclick="deletePhoto()" title="Foto löschen">×</button>
+                    </div>
+                </div>
+                <input type="file" id="photoInput" accept="image/*" capture="environment" style="display: none;" onchange="handlePhotoSelect(event)">
+            </div>
+            
+            <div class="notes-section">
+                <label class="notes-label" for="standNotes">Notizen</label>
+                <textarea 
+                    class="notes-input" 
+                    id="standNotes" 
+                    placeholder="Notizen zu diesem Stand..."
+                    rows="3"
+                ></textarea>
+            </div>
+            <button class="modal-save-btn" onclick="saveAndClose()">Speichern</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // AIRTABLE CONFIGURATION
+        // ============================================
+        const AIRTABLE_CONFIG = {
+            API_KEY: 'patEVDwu2czj55kC3.5048cb6ea3edac2528d9b9e0ec54be4f08034ac0feef5ab924b9fc1919ea27fe',
+            BASE_ID: 'appxlEaYC8YlCREJ9',
+            TABLE_NAME: 'Standplan'
+        };
+
+        let airtableRecords = {};
+
+        // ============================================
+        // LAYOUT DATA
+        // ============================================
+        const layoutData = {
+            leftColumn: {
+                top: [316, 315, 314, 313, 312, 311, 310, 309, 308, 307],
+                middle: [129, 128, 127, 126, 125, 124, 123, 122, 121, 120, 119, 118, 117, 116],
+                bottom: [115, 114, 113, 112, 111, 110, 109, 108, 107, 106, 105, 104, 103, 102]
+            },
+            rightColumn: {
+                top: [230, 229, 228, 227, 226, 225, 224, 223, 222, 221, 220, 219, 218, 217, 216, 215, 214, 213, 212, 211],
+                bottom: [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]
+            },
+            upperBlocks: [
+                { top: [304, 305, 306], left: [303, 302, 301, 300, 299, 298, 297, 296], right: [288, 289, 290, 291, 292, 293], bottom: [295, 294] },
+                { top: [285, 286, 287], left: [284, 283, 282, 281, 280, 279, 278, 277], right: [269, 270, 271, 272, 273, 274], bottom: [276, 275] },
+                { top: [266, 267, 268], left: [265, 264, 263, 262, 261, 260, 259, 258], right: [250, 251, 252, 253, 254, 255], bottom: [257, 256] },
+                { top: [247, 248, 249], left: [246, 245, 244, 243, 242, 241, 240, 239], right: [231, 232, 233, 234, 235, 236], bottom: [238, 237] }
+            ],
+            lowerBlocks: [
+                { top: [154, 155, 156], left: [153, 152, 151, 150, 149, 148, 147, 146, 145, 144, 143, 142], right: [130, 131, 132, 133, 134, 135, 136, 137, 138, 139], bottom: [141, 140] },
+                { top: [181, 182, 183], left: [180, 179, 178, 177, 176, 175, 174, 173, 172, 171, 170, 169], right: [157, 158, 159, 160, 161, 162, 163, 164, 165, 166], bottom: [168, 167] },
+                { top: [208, 209, 210], left: [207, 206, 205, 204, 203, 202, 201, 200, 199, 198, 197, 196], right: [184, 185, 186, 187, 188, 189, 190, 191, 192, 193], bottom: [195, 194] }
+            ],
+            bottomBlocks: [
+                { top: [99, 100, 101], left: [98, 97, 96, 95, 94, 93, 92, 91, 90, 89, 88, 87], right: [75, 76, 77, 78, 79, 80, 81, 82, 83, 84], bottom: [86, 85] },
+                { top: [72, 73, 74], left: [71, 70, 69, 68, 67, 66, 65, 64, 63, 62, 61, 60], right: [48, 49, 50, 51, 52, 53, 54, 55, 56, 57], bottom: [59, 58] },
+                { top: [45, 46, 47], left: [44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33], right: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30], bottom: [32, 31] }
+            ]
+        };
+
+        // ============================================
+        // STATE
+        // ============================================
+        let stands = {};
+        let standNotes = {};
+        let standPhotos = {};
+        for (let i = 1; i <= 316; i++) stands[i] = 'free';
+        const saved = localStorage.getItem('saalplanStands');
+        if (saved) stands = JSON.parse(saved);
+        
+        const savedNotes = localStorage.getItem('saalplanNotes');
+        if (savedNotes) standNotes = JSON.parse(savedNotes);
+        
+        const savedPhotos = localStorage.getItem('saalplanPhotos');
+        if (savedPhotos) standPhotos = JSON.parse(savedPhotos);
+
+        let selectedStand = null;
+        let selectedStands = new Set();
+        let isDragging = false;
+        let activeFilter = null;
+        let currentZoom = 1;
+        let initialZoomSet = false;
+        let currentModalStatus = null;
+        let currentPhoto = null;
+
+        // ============================================
+        // AIRTABLE SYNC FUNCTIONS
+        // ============================================
+        function setSyncStatus(status) {
+            const indicator = document.getElementById('syncIndicator');
+            indicator.className = 'sync-indicator ' + status;
+        }
+
+        async function fetchFromAirtable() {
+            setSyncStatus('syncing');
+            try {
+                const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}?pageSize=100`;
+                const headers = { 'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}` };
+
+                let allRecords = [];
+                let offset = null;
+
+                do {
+                    const fetchUrl = offset ? `${url}&offset=${offset}` : url;
+                    const res = await fetch(fetchUrl, { headers });
+                    const data = await res.json();
+                    allRecords = allRecords.concat(data.records || []);
+                    offset = data.offset;
+                } while (offset);
+
+                const statusMap = { 'frei': 'free', 'besetzt': 'occupied', 'reserviert': 'reserved' };
+
+                allRecords.forEach(record => {
+                    const num = parseInt(record.fields['Standnummer']);
+                    const status = record.fields['Status'];
+                    if (num && status) {
+                        stands[num] = statusMap[status.toLowerCase()] || 'free';
+                        airtableRecords[num] = record.id;
+                    }
+                });
+
+                localStorage.setItem('saalplanStands', JSON.stringify(stands));
+                render();
+                setSyncStatus('success');
+                setTimeout(() => setSyncStatus(''), 2000);
+            } catch (error) {
+                console.error('Airtable fetch error:', error);
+                setSyncStatus('error');
+            }
+        }
+
+        async function syncToAirtable(standNummer, status) {
+            setSyncStatus('syncing');
+            try {
+                const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`;
+                const headers = {
+                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const statusToGerman = { 'free': 'frei', 'occupied': 'besetzt', 'reserved': 'reserviert' };
+                const germanStatus = statusToGerman[status] || 'frei';
+
+                if (airtableRecords[standNummer]) {
+                    await fetch(`${url}/${airtableRecords[standNummer]}`, {
+                        method: 'PATCH',
+                        headers,
+                        body: JSON.stringify({ fields: { 'Status': germanStatus } })
+                    });
+                } else {
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({
+                            fields: { 'Standnummer': standNummer, 'Status': germanStatus }
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.id) airtableRecords[standNummer] = data.id;
+                }
+
+                setSyncStatus('success');
+                setTimeout(() => setSyncStatus(''), 2000);
+            } catch (error) {
+                console.error('Airtable sync error:', error);
+                setSyncStatus('error');
+            }
+        }
+
+        async function syncMultipleToAirtable(standNumbers, status) {
+            setSyncStatus('syncing');
+            try {
+                const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`;
+                const headers = {
+                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const statusToGerman = { 'free': 'frei', 'occupied': 'besetzt', 'reserved': 'reserviert' };
+                const germanStatus = statusToGerman[status] || 'frei';
+
+                const updates = [];
+                const creates = [];
+
+                standNumbers.forEach(num => {
+                    if (airtableRecords[num]) {
+                        updates.push({ id: airtableRecords[num], fields: { 'Status': germanStatus } });
+                    } else {
+                        creates.push({ fields: { 'Standnummer': num, 'Status': germanStatus } });
+                    }
+                });
+
+                for (let i = 0; i < updates.length; i += 10) {
+                    const batch = updates.slice(i, i + 10);
+                    await fetch(url, {
+                        method: 'PATCH',
+                        headers,
+                        body: JSON.stringify({ records: batch })
+                    });
+                }
+
+                for (let i = 0; i < creates.length; i += 10) {
+                    const batch = creates.slice(i, i + 10);
+                    const res = await fetch(url, {
+                        method: 'POST',
+                        headers,
+                        body: JSON.stringify({ records: batch })
+                    });
+                    const data = await res.json();
+                    if (data.records) {
+                        data.records.forEach(record => {
+                            const num = parseInt(record.fields['Standnummer']);
+                            if (num) airtableRecords[num] = record.id;
+                        });
+                    }
+                }
+
+                setSyncStatus('success');
+                setTimeout(() => setSyncStatus(''), 2000);
+            } catch (error) {
+                console.error('Airtable batch sync error:', error);
+                setSyncStatus('error');
+            }
+        }
+
+        function refreshFromAirtable() {
+            fetchFromAirtable();
+            showToast('Synchronisiere mit Airtable...');
+        }
+
+        // ============================================
+        // UI FUNCTIONS
+        // ============================================
+        function createStand(num) {
+            const div = document.createElement('div');
+            div.className = `stand ${stands[num]}`;
+            div.textContent = num;
+            div.dataset.stand = num;
+            return div;
+        }
+
+        function createUBlock(block) {
+            const container = document.createElement('div');
+            container.className = 'u-block';
+
+            const top = document.createElement('div');
+            top.className = 'u-top';
+            block.top.forEach(num => top.appendChild(createStand(num)));
+            container.appendChild(top);
+
+            const middle = document.createElement('div');
+            middle.className = 'u-middle';
+            const left = document.createElement('div');
+            left.className = 'u-side';
+            block.left.forEach(num => left.appendChild(createStand(num)));
+            const right = document.createElement('div');
+            right.className = 'u-side';
+            block.right.forEach(num => right.appendChild(createStand(num)));
+            middle.appendChild(left);
+            middle.appendChild(right);
+            container.appendChild(middle);
+
+            const bottom = document.createElement('div');
+            bottom.className = 'u-bottom';
+            block.bottom.forEach(num => bottom.appendChild(createStand(num)));
+            container.appendChild(bottom);
+
+            return container;
+        }
+
+        function render() {
+            const plan = document.getElementById('floorPlan');
+            plan.innerHTML = '';
+
+            const layout = document.createElement('div');
+            layout.style.display = 'flex';
+            layout.style.gap = '16px';
+
+            const leftCol = document.createElement('div');
+            leftCol.className = 'vertical-column';
+            layoutData.leftColumn.top.forEach(num => leftCol.appendChild(createStand(num)));
+            leftCol.appendChild(Object.assign(document.createElement('div'), { className: 'spacer' }));
+            layoutData.leftColumn.middle.forEach(num => leftCol.appendChild(createStand(num)));
+            leftCol.appendChild(Object.assign(document.createElement('div'), { className: 'spacer' }));
+            layoutData.leftColumn.bottom.forEach(num => leftCol.appendChild(createStand(num)));
+            layout.appendChild(leftCol);
+
+            const centerArea = document.createElement('div');
+            centerArea.style.cssText = 'display:flex;flex-direction:column;gap:20px;';
+            [layoutData.upperBlocks, layoutData.lowerBlocks, layoutData.bottomBlocks].forEach(blocks => {
+                const row = document.createElement('div');
+                row.className = 'block-row';
+                blocks.forEach(block => row.appendChild(createUBlock(block)));
+                centerArea.appendChild(row);
+            });
+            layout.appendChild(centerArea);
+
+            const rightCol = document.createElement('div');
+            rightCol.className = 'vertical-column';
+            layoutData.rightColumn.top.forEach(num => rightCol.appendChild(createStand(num)));
+            const spacer = document.createElement('div');
+            spacer.style.height = '52px';
+            rightCol.appendChild(spacer);
+            layoutData.rightColumn.bottom.forEach(num => rightCol.appendChild(createStand(num)));
+            layout.appendChild(rightCol);
+
+            plan.appendChild(layout);
+            updateStats();
+        }
+
+        function updateStats() {
+            const counts = { free: 0, occupied: 0, reserved: 0 };
+            Object.values(stands).forEach(s => counts[s]++);
+            document.getElementById('freeCount').textContent = counts.free;
+            document.getElementById('occupiedCount').textContent = counts.occupied;
+            document.getElementById('reservedCount').textContent = counts.reserved;
+        }
+
+        function zoomIn() {
+            currentZoom = Math.min(currentZoom + 0.2, 2.5);
+            applyZoom();
+        }
+
+        function zoomOut() {
+            currentZoom = Math.max(currentZoom - 0.2, 0.4);
+            applyZoom();
+        }
+
+        function applyZoom() {
+            document.getElementById('planWrapper').style.transform = `scale(${currentZoom})`;
+        }
+
+        function toggleFilter(status) {
+            const stats = document.querySelectorAll('.stat[data-filter]');
+            if (activeFilter === status) {
+                activeFilter = null;
+                stats.forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.stand').forEach(el => el.classList.remove('dimmed'));
+            } else {
+                activeFilter = status;
+                stats.forEach(s => s.classList.toggle('active', s.dataset.filter === status));
+                document.querySelectorAll('.stand').forEach(el => {
+                    el.classList.toggle('dimmed', stands[+el.dataset.stand] !== status);
+                });
+            }
+        }
+
+        function applyFilter() {
+            if (activeFilter) {
+                document.querySelectorAll('.stand').forEach(el => {
+                    el.classList.toggle('dimmed', stands[+el.dataset.stand] !== activeFilter);
+                });
+            }
+        }
+
+        function setupInteractions() {
+            const container = document.getElementById('planContainer');
+            const wrapper = document.getElementById('planWrapper');
+            
+            // ============================================
+            // PINCH-TO-ZOOM (Touch) - Custom implementation
+            // ============================================
+            let initialDistance = 0;
+            let initialZoom = 1;
+            let isPinching = false;
+            
+            container.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    e.preventDefault(); // Prevent browser zoom
+                    isPinching = true;
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    initialDistance = Math.sqrt(dx * dx + dy * dy);
+                    initialZoom = currentZoom;
+                }
+            }, { passive: false });
+            
+            container.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && isPinching) {
+                    e.preventDefault(); // Prevent browser zoom
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    const scale = distance / initialDistance;
+                    currentZoom = Math.min(Math.max(initialZoom * scale, 0.3), 2.5);
+                    applyZoom();
+                }
+            }, { passive: false });
+            
+            container.addEventListener('touchend', () => {
+                isPinching = false;
+            }, { passive: true });
+            
+            // ============================================
+            // MOUSE WHEEL ZOOM (Desktop)
+            // ============================================
+            container.addEventListener('wheel', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                    currentZoom = Math.min(Math.max(currentZoom + delta, 0.3), 2.5);
+                    applyZoom();
+                }
+            }, { passive: false });
+            
+            // ============================================
+            // DESKTOP: Click für Stand-Auswahl
+            // ============================================
+            wrapper.addEventListener('click', (e) => {
+                const stand = e.target.closest('.stand');
+                if (!stand) return;
+                
+                const num = +stand.dataset.stand;
+                
+                // Shift+Click für Mehrfachauswahl
+                if (e.shiftKey) {
+                    if (selectedStands.has(num)) {
+                        selectedStands.delete(num);
+                        stand.classList.remove('selected');
+                    } else {
+                        selectedStands.add(num);
+                        stand.classList.add('selected');
+                    }
+                    updateSelectionUI();
+                } else {
+                    // Normaler Klick = Modal öffnen
+                    if (selectedStands.size > 0 && !selectedStands.has(num)) {
+                        clearSelection();
+                    }
+                    openModal(num);
+                }
+            });
+            
+            // ============================================
+            // TOUCH: Unterscheide Tap vs Scroll vs Long-Press
+            // ============================================
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchStartTime = 0;
+            let touchedStand = null;
+            let hasMoved = false;
+            let longPressTimer = null;
+            let longPressTriggered = false;
+            
+            const TAP_THRESHOLD = 15; // Max Pixel-Bewegung für Tap
+            const TAP_MAX_DURATION = 300; // Max ms für Tap
+            const LONG_PRESS_DURATION = 500; // ms für Long-Press
+            
+            wrapper.addEventListener('touchstart', (e) => {
+                // Ignoriere wenn Pinch aktiv
+                if (e.touches.length !== 1) {
+                    clearTimeout(longPressTimer);
+                    return;
+                }
+                
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+                touchStartTime = Date.now();
+                hasMoved = false;
+                longPressTriggered = false;
+                
+                const stand = e.target.closest('.stand');
+                touchedStand = stand ? +stand.dataset.stand : null;
+                
+                // Long-Press Timer starten
+                if (touchedStand) {
+                    longPressTimer = setTimeout(() => {
+                        if (!hasMoved && touchedStand) {
+                            longPressTriggered = true;
+                            
+                            // Vibration Feedback
+                            if (navigator.vibrate) navigator.vibrate(50);
+                            
+                            // Toggle Auswahl
+                            const standEl = document.querySelector(`[data-stand="${touchedStand}"]`);
+                            if (selectedStands.has(touchedStand)) {
+                                selectedStands.delete(touchedStand);
+                                standEl?.classList.remove('selected');
+                            } else {
+                                selectedStands.add(touchedStand);
+                                standEl?.classList.add('selected');
+                            }
+                            updateSelectionUI();
+                        }
+                    }, LONG_PRESS_DURATION);
+                }
+            }, { passive: true });
+            
+            wrapper.addEventListener('touchmove', (e) => {
+                if (e.touches.length !== 1) return;
+                
+                const touch = e.touches[0];
+                const dx = Math.abs(touch.clientX - touchStartX);
+                const dy = Math.abs(touch.clientY - touchStartY);
+                
+                // Wenn Bewegung über Threshold = Scroll, kein Tap
+                if (dx > TAP_THRESHOLD || dy > TAP_THRESHOLD) {
+                    hasMoved = true;
+                    clearTimeout(longPressTimer);
+                }
+            }, { passive: true });
+            
+            wrapper.addEventListener('touchend', (e) => {
+                clearTimeout(longPressTimer);
+                
+                // Ignoriere wenn Long-Press ausgelöst wurde
+                if (longPressTriggered) {
+                    touchedStand = null;
+                    return;
+                }
+                
+                // Ignoriere wenn es Scroll/Swipe war
+                if (hasMoved) {
+                    touchedStand = null;
+                    return;
+                }
+                
+                // Ignoriere wenn es ein Pinch war
+                if (isPinching) {
+                    touchedStand = null;
+                    return;
+                }
+                
+                const touchDuration = Date.now() - touchStartTime;
+                
+                // Tap erkannt: kurz genug und ohne Bewegung
+                if (touchedStand && touchDuration < TAP_MAX_DURATION) {
+                    // Wenn schon Mehrfachauswahl aktiv, füge hinzu
+                    if (selectedStands.size > 0) {
+                        if (selectedStands.has(touchedStand)) {
+                            selectedStands.delete(touchedStand);
+                            document.querySelector(`[data-stand="${touchedStand}"]`)?.classList.remove('selected');
+                        } else {
+                            selectedStands.add(touchedStand);
+                            document.querySelector(`[data-stand="${touchedStand}"]`)?.classList.add('selected');
+                        }
+                        updateSelectionUI();
+                    } else {
+                        // Sonst Modal öffnen
+                        openModal(touchedStand);
+                    }
+                }
+                
+                touchedStand = null;
+            }, { passive: true });
+            
+            wrapper.addEventListener('touchcancel', () => {
+                clearTimeout(longPressTimer);
+                touchedStand = null;
+                hasMoved = false;
+            }, { passive: true });
+        }
+
+        function clearSelection() {
+            selectedStands.forEach(num => {
+                document.querySelector(`[data-stand="${num}"]`)?.classList.remove('selected');
+            });
+            selectedStands.clear();
+            updateSelectionUI();
+        }
+
+        function updateSelectionUI() {
+            const bar = document.getElementById('selectionBar');
+            document.getElementById('selectedCount').textContent = selectedStands.size;
+            bar.classList.toggle('active', selectedStands.size > 1);
+        }
+
+        function openModal(num) {
+            selectedStand = num;
+            currentModalStatus = stands[num];
+            currentPhoto = standPhotos[num] || null;
+            
+            document.getElementById('modalStandId').textContent = num;
+            document.getElementById('standNotes').value = standNotes[num] || '';
+            
+            // Foto anzeigen oder Placeholder
+            updatePhotoDisplay();
+            
+            // Markiere aktuellen Status
+            document.querySelectorAll('.status-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        
+        function updatePhotoDisplay() {
+            const placeholder = document.getElementById('photoPlaceholder');
+            const preview = document.getElementById('photoPreview');
+            const image = document.getElementById('photoImage');
+            
+            if (currentPhoto) {
+                placeholder.style.display = 'none';
+                preview.style.display = 'block';
+                image.src = currentPhoto;
+            } else {
+                placeholder.style.display = 'flex';
+                preview.style.display = 'none';
+                image.src = '';
+            }
+        }
+        
+        function triggerPhotoInput() {
+            document.getElementById('photoInput').click();
+        }
+        
+        function handlePhotoSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Komprimiere und konvertiere zu Base64
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                // Erstelle ein Bild-Element um zu komprimieren
+                const img = new Image();
+                img.onload = function() {
+                    // Komprimiere das Bild
+                    const canvas = document.createElement('canvas');
+                    const maxSize = 800; // Max Breite/Höhe
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height *= maxSize / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width *= maxSize / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Konvertiere zu JPEG mit 70% Qualität
+                    currentPhoto = canvas.toDataURL('image/jpeg', 0.7);
+                    updatePhotoDisplay();
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+            
+            // Reset input für erneute Auswahl
+            event.target.value = '';
+        }
+        
+        function deletePhoto() {
+            currentPhoto = null;
+            updatePhotoDisplay();
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            selectedStand = null;
+            currentModalStatus = null;
+            currentPhoto = null;
+        }
+
+        function setStatus(status) {
+            if (selectedStands.size > 1) {
+                // Mehrfachauswahl - direkt speichern
+                const standsToUpdate = Array.from(selectedStands);
+                standsToUpdate.forEach(num => {
+                    stands[num] = status;
+                    const el = document.querySelector(`[data-stand="${num}"]`);
+                    if (el) el.className = `stand ${status}`;
+                });
+                localStorage.setItem('saalplanStands', JSON.stringify(stands));
+                updateStats();
+                applyFilter();
+                showToast(`${selectedStands.size} Stände aktualisiert`);
+                syncMultipleToAirtable(standsToUpdate, status);
+                clearSelection();
+            } else if (selectedStand) {
+                // Einzelauswahl im Modal - nur Status merken, noch nicht speichern
+                currentModalStatus = status;
+                
+                // Visuelles Feedback: Button hervorheben
+                document.querySelectorAll('.status-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                event.currentTarget.classList.add('active');
+            }
+        }
+        
+        function saveAndClose() {
+            if (!selectedStand) return;
+            
+            const notes = document.getElementById('standNotes').value.trim();
+            const status = currentModalStatus || stands[selectedStand];
+            
+            // Status speichern
+            stands[selectedStand] = status;
+            localStorage.setItem('saalplanStands', JSON.stringify(stands));
+            
+            // Notizen speichern
+            if (notes) {
+                standNotes[selectedStand] = notes;
+            } else {
+                delete standNotes[selectedStand];
+            }
+            localStorage.setItem('saalplanNotes', JSON.stringify(standNotes));
+            
+            // Foto speichern
+            if (currentPhoto) {
+                standPhotos[selectedStand] = currentPhoto;
+            } else {
+                delete standPhotos[selectedStand];
+            }
+            try {
+                localStorage.setItem('saalplanPhotos', JSON.stringify(standPhotos));
+            } catch (e) {
+                // localStorage könnte voll sein bei vielen Fotos
+                console.warn('Foto konnte nicht gespeichert werden (Speicher voll?):', e);
+                showToast('Foto zu groß für Speicher');
+            }
+            
+            // UI aktualisieren
+            const el = document.querySelector(`[data-stand="${selectedStand}"]`);
+            if (el) el.className = `stand ${status}`;
+            updateStats();
+            applyFilter();
+            
+            // Sync mit Airtable
+            syncToAirtable(selectedStand, status);
+            
+            showToast('Gespeichert');
+            closeModal();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            document.querySelectorAll('.stand.highlight').forEach(el => el.classList.remove('highlight'));
+            const num = parseInt(e.target.value);
+            if (num >= 1 && num <= 316) {
+                const el = document.querySelector(`[data-stand="${num}"]`);
+                if (el) {
+                    el.classList.add('highlight');
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        });
+
+        document.getElementById('eventTitle').addEventListener('change', function() {
+            localStorage.setItem('saalplanTitle', this.value);
+        });
+
+        function loadTitle() {
+            const saved = localStorage.getItem('saalplanTitle');
+            if (saved) document.getElementById('eventTitle').value = saved;
+        }
+
+        function exportData() {
+            const title = document.getElementById('eventTitle').value || 'Saalplan';
+            let csv = 'Stand,Status\n';
+            for (let i = 1; i <= 316; i++) {
+                csv += `${i},${stands[i] === 'free' ? 'Frei' : stands[i] === 'occupied' ? 'Besetzt' : 'Reserviert'}\n`;
+            }
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            link.download = `${title.replace(/\s+/g, '-').toLowerCase()}-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+            showToast('Export erfolgreich');
+        }
+
+        function resetAll() {
+            if (confirm('Alle Stände zurücksetzen?')) {
+                for (let i = 1; i <= 316; i++) stands[i] = 'free';
+                localStorage.setItem('saalplanStands', JSON.stringify(stands));
+                render();
+                showToast('Zurückgesetzt');
+            }
+        }
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        
+        function closeHint() {
+            document.getElementById('hint').classList.add('hidden');
+            localStorage.setItem('saalplanHintClosed', 'true');
+        }
+        
+        function checkHint() {
+            if (localStorage.getItem('saalplanHintClosed') === 'true') {
+                document.getElementById('hint').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', e => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        // Keyboard shortcut: Escape to close modal
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') {
+                closeModal();
+                clearSelection();
+            }
+        });
+
+        // Auto-fit zoom to show entire floor plan
+        function calculateInitialZoom() {
+            const container = document.getElementById('planContainer');
+            const wrapper = document.getElementById('planWrapper');
+            
+            // Reset zoom to measure actual size
+            wrapper.style.transform = 'scale(1)';
+            
+            const containerRect = container.getBoundingClientRect();
+            const wrapperRect = wrapper.getBoundingClientRect();
+            
+            // Calculate available space (with padding)
+            const availableWidth = containerRect.width - 48;
+            const availableHeight = containerRect.height - 48;
+            
+            // Calculate zoom to fit
+            const zoomX = availableWidth / wrapperRect.width;
+            const zoomY = availableHeight / wrapperRect.height;
+            
+            // Use the smaller zoom to ensure it fits, with a max of 1
+            currentZoom = Math.min(zoomX, zoomY, 1);
+            currentZoom = Math.max(currentZoom, 0.3); // Minimum zoom
+            
+            applyZoom();
+            initialZoomSet = true;
+        }
+
+        // Recalculate on resize
+        window.addEventListener('resize', () => {
+            if (initialZoomSet) {
+                calculateInitialZoom();
+            }
+        });
+
+        // Initialize
+        render();
+        setupInteractions();
+        loadTitle();
+        checkHint();
+        fetchFromAirtable();
+        
+        // Set initial zoom after a short delay to ensure DOM is ready
+        setTimeout(calculateInitialZoom, 100);
+    </script>
+</body>
+</html>

@@ -1342,6 +1342,7 @@
         <div class="modal">
             <div class="modal-header">
                 <div class="modal-title">Stand <span id="modalStandId"></span></div>
+                <div id="modalExhibitor" style="font-size:13px;color:var(--text-secondary);margin-top:2px;font-weight:500;"></div>
                 <button class="modal-close" onclick="closeModal()">×</button>
             </div>
             <div class="status-grid">
@@ -1397,12 +1398,13 @@
         // AIRTABLE CONFIGURATION
         // ============================================
         const AIRTABLE_CONFIG = {
-            API_KEY: 'patEVDwu2czj55kC3.5048cb6ea3edac2528d9b9e0ec54be4f08034ac0feef5ab924b9fc1919ea27fe',
+            API_KEY: new URLSearchParams(window.location.search).get('key') || '',
             BASE_ID: 'appxlEaYC8YlCREJ9',
             TABLE_NAME: 'Standplan'
         };
 
         let airtableRecords = {};
+        let standExhibitors = {};
 
         // ============================================
         // LAYOUT DATA
@@ -1451,6 +1453,9 @@
         const savedPhotos = localStorage.getItem('saalplanPhotos');
         if (savedPhotos) standPhotos = JSON.parse(savedPhotos);
 
+        const savedExhibitors = localStorage.getItem('saalplanExhibitors');
+        if (savedExhibitors) standExhibitors = JSON.parse(savedExhibitors);
+
         let selectedStand = null;
         let selectedStands = new Set();
         let isDragging = false;
@@ -1469,6 +1474,11 @@
         }
 
         async function fetchFromAirtable() {
+            if (!AIRTABLE_CONFIG.API_KEY) {
+                setSyncStatus('error');
+                console.error('Kein API-Key. URL mit ?key=pat... öffnen.');
+                return;
+            }
             setSyncStatus('syncing');
             try {
                 const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}?pageSize=100`;
@@ -1480,23 +1490,25 @@
                 do {
                     const fetchUrl = offset ? `${url}&offset=${offset}` : url;
                     const res = await fetch(fetchUrl, { headers });
+                    if (!res.ok) throw new Error(`Airtable API ${res.status}: ${res.statusText}`);
                     const data = await res.json();
                     allRecords = allRecords.concat(data.records || []);
                     offset = data.offset;
                 } while (offset);
 
-                const statusMap = { 'frei': 'free', 'besetzt': 'occupied', 'reserviert': 'reserved' };
-
                 allRecords.forEach(record => {
                     const num = parseInt(record.fields['Standnummer']);
-                    const status = record.fields['Status'];
-                    if (num && status) {
-                        stands[num] = statusMap[status.toLowerCase()] || 'free';
-                        airtableRecords[num] = record.id;
-                    }
+                    if (!num) return;
+                    const exhibitor = record.fields['Aussteller Name']
+                        ? record.fields['Aussteller Name'][0]
+                        : null;
+                    airtableRecords[num] = record.id;
+                    standExhibitors[num] = exhibitor || '';
+                    stands[num] = exhibitor ? 'occupied' : 'free';
                 });
 
                 localStorage.setItem('saalplanStands', JSON.stringify(stands));
+                localStorage.setItem('saalplanExhibitors', JSON.stringify(standExhibitors));
                 render();
                 setSyncStatus('success');
                 setTimeout(() => setSyncStatus(''), 2000);
@@ -1506,99 +1518,10 @@
             }
         }
 
-        async function syncToAirtable(standNummer, status) {
-            setSyncStatus('syncing');
-            try {
-                const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`;
-                const headers = {
-                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
-                    'Content-Type': 'application/json'
-                };
-
-                const statusToGerman = { 'free': 'frei', 'occupied': 'besetzt', 'reserved': 'reserviert' };
-                const germanStatus = statusToGerman[status] || 'frei';
-
-                if (airtableRecords[standNummer]) {
-                    await fetch(`${url}/${airtableRecords[standNummer]}`, {
-                        method: 'PATCH',
-                        headers,
-                        body: JSON.stringify({ fields: { 'Status': germanStatus } })
-                    });
-                } else {
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({
-                            fields: { 'Standnummer': standNummer, 'Status': germanStatus }
-                        })
-                    });
-                    const data = await res.json();
-                    if (data.id) airtableRecords[standNummer] = data.id;
-                }
-
-                setSyncStatus('success');
-                setTimeout(() => setSyncStatus(''), 2000);
-            } catch (error) {
-                console.error('Airtable sync error:', error);
-                setSyncStatus('error');
-            }
-        }
-
-        async function syncMultipleToAirtable(standNumbers, status) {
-            setSyncStatus('syncing');
-            try {
-                const url = `https://api.airtable.com/v0/${AIRTABLE_CONFIG.BASE_ID}/${AIRTABLE_CONFIG.TABLE_NAME}`;
-                const headers = {
-                    'Authorization': `Bearer ${AIRTABLE_CONFIG.API_KEY}`,
-                    'Content-Type': 'application/json'
-                };
-
-                const statusToGerman = { 'free': 'frei', 'occupied': 'besetzt', 'reserved': 'reserviert' };
-                const germanStatus = statusToGerman[status] || 'frei';
-
-                const updates = [];
-                const creates = [];
-
-                standNumbers.forEach(num => {
-                    if (airtableRecords[num]) {
-                        updates.push({ id: airtableRecords[num], fields: { 'Status': germanStatus } });
-                    } else {
-                        creates.push({ fields: { 'Standnummer': num, 'Status': germanStatus } });
-                    }
-                });
-
-                for (let i = 0; i < updates.length; i += 10) {
-                    const batch = updates.slice(i, i + 10);
-                    await fetch(url, {
-                        method: 'PATCH',
-                        headers,
-                        body: JSON.stringify({ records: batch })
-                    });
-                }
-
-                for (let i = 0; i < creates.length; i += 10) {
-                    const batch = creates.slice(i, i + 10);
-                    const res = await fetch(url, {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({ records: batch })
-                    });
-                    const data = await res.json();
-                    if (data.records) {
-                        data.records.forEach(record => {
-                            const num = parseInt(record.fields['Standnummer']);
-                            if (num) airtableRecords[num] = record.id;
-                        });
-                    }
-                }
-
-                setSyncStatus('success');
-                setTimeout(() => setSyncStatus(''), 2000);
-            } catch (error) {
-                console.error('Airtable batch sync error:', error);
-                setSyncStatus('error');
-            }
-        }
+        // Airtable is read-only (Aussteller are managed in Airtable).
+        // Local status changes (reserved) are stored in localStorage only.
+        function syncToAirtable() { /* read-only */ }
+        function syncMultipleToAirtable() { /* read-only */ }
 
         function refreshFromAirtable() {
             fetchFromAirtable();
@@ -1613,6 +1536,7 @@
             div.className = `stand ${stands[num]}`;
             div.textContent = num;
             div.dataset.stand = num;
+            if (standExhibitors[num]) div.title = standExhibitors[num];
             return div;
         }
 
@@ -1950,6 +1874,9 @@
             currentPhoto = standPhotos[num] || null;
             
             document.getElementById('modalStandId').textContent = num;
+            const exhibitorEl = document.getElementById('modalExhibitor');
+            exhibitorEl.textContent = standExhibitors[num] || '';
+            exhibitorEl.style.display = standExhibitors[num] ? '' : 'none';
             document.getElementById('standNotes').value = standNotes[num] || '';
             
             // Foto anzeigen oder Placeholder
